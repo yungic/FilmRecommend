@@ -1,17 +1,19 @@
 package rec.filmrec.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+@Entity
 @Getter
 @Setter
-@AllArgsConstructor
-public class Comment {
+@Table(name = "table")
+public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id ;
-    protected int password;
-    protected String content;
+    @OneToMany(mappedBy="user")
+    private Long id;
+    private String nickname;
+    private int password;
 }
