@@ -14,15 +14,16 @@ import java.util.List;
 public class MovieBoard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @OneToMany(mappedBy = "movieBoard")
     private Long id;
 
     @Column(name = "wait_board_id")
     private Long waitBoardId;
 
-    @OneToMany(mappedBy = "movieBoard", cascade = CascadeType.ALL)
-    private List<BoardComment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "movieBoard", cascade = CascadeType.ALL)
-    private List<Post> posts = new ArrayList<>();
+//    @OneToMany(mappedBy = "movieBoard", cascade = CascadeType.ALL)
+//    private List<BoardComment> comments = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "movieBoard", cascade = CascadeType.ALL)
+//    private List<Post> posts = new ArrayList<>();
 
 }
