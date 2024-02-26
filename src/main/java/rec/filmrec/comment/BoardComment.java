@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rec.filmrec.board.MovieBoard;
+import rec.filmrec.domain.BaseEntity;
 
 @Entity
 @Getter
 @Setter
 @Table(name="board_comment")
-public class BoardComment {
+public class BoardComment extends BaseEntity {
 
     @Id
     @Column(name="bc_id")

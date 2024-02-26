@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rec.filmrec.comment.BoardComment;
+import rec.filmrec.domain.BaseEntity;
 import rec.filmrec.post.Post;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "movie_board")
-public class MovieBoard {
+public class MovieBoard extends BaseEntity {
 
     @Id
     @Column(name = "mb_id")

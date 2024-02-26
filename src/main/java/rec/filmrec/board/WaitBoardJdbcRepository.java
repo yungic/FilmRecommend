@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class WaitBoardJdbcRepository {
@@ -49,6 +50,18 @@ public class WaitBoardJdbcRepository {
 
             return waitBoard;
         }
+    }
+
+    public Optional<WaitBoard> findWaitBoardByWbId(long wbId) {
+        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content, " +
+                "m.id AS movie_id, m.title AS movie_title, m.info AS movie_info, " +
+                "u.id AS user_id, u.ni AS user_nick " +
+                "FROM wait_board w " +
+                "JOIN movie m ON w.m_id = m.m_id " +
+                "JOIN user u ON w.u_id = u.u_id " +
+                "WHERE w.w_id = ?";
+
+        return jdbcTemplate.query(sql, new Object[]{wbId}, new waitBoardRowMapper()).stream().findFirst();
     }
 
     public List<WaitBoard> findWaitBoardWithMovie(long movieId) {
@@ -110,12 +123,10 @@ public class WaitBoardJdbcRepository {
     }
 
     public void updateWaitBoard(WaitBoard waitBoard) {
-        String sql = "UPDATE wait_board SET wb_title = ?, wb_content = ?, m_id = ?, u_id = ? WHERE wb_id = ?";
+        String sql = "UPDATE wait_board SET wb_title = ?, wb_content = ?, WHERE wb_id = ?";
         jdbcTemplate.update(sql,
                 waitBoard.getWbTitle(),
                 waitBoard.getWbContent(),
-                waitBoard.getMovie().getMovieId(),
-                waitBoard.getUser().getUserId(),
                 waitBoard.getWbId());
     }
 

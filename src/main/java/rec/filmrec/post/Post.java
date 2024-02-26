@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import rec.filmrec.board.MovieBoard;
 import rec.filmrec.comment.PostComment;
+import rec.filmrec.domain.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name="post")
-public class Post {
+public class Post extends BaseEntity {
 
     @Id
     @Column(name = "post_id")

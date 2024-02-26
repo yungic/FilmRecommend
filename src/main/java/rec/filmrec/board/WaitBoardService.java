@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WaitBoardService {
@@ -17,6 +18,10 @@ public class WaitBoardService {
 
     public List<WaitBoard> findAllWaitBoard() {
         return waitBoardJdbcRepository.findAllWaitBoard();
+    }
+
+    public Optional<WaitBoard> findWbById(long wbId) {
+        return waitBoardJdbcRepository.findWaitBoardByWbId(wbId);
     }
 
     public List<WaitBoard> findWbWithMovie(long movieId) {
@@ -35,7 +40,7 @@ public class WaitBoardService {
         waitBoardJdbcRepository.updateWaitBoard(updatedWaitBoard);
     }
 
-    public void deleteWaitBoard(WaitBoard deletedWaitBoard) {
-        waitBoardJdbcRepository.deleteWaitBoard(deletedWaitBoard.getWbId());
+    public void deleteWaitBoard(long wbId) {
+        waitBoardJdbcRepository.deleteWaitBoard(wbId);
     }
 }

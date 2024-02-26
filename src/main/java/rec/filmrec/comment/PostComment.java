@@ -4,13 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rec.filmrec.board.MovieBoard;
+import rec.filmrec.domain.BaseEntity;
 import rec.filmrec.post.Post;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "post_comment")
-public class PostComment {
+public class PostComment extends BaseEntity {
 
     @Id
     @Column(name="pc_id")

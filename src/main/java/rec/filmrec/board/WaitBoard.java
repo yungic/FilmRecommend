@@ -3,6 +3,7 @@ package rec.filmrec.board;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import rec.filmrec.domain.BaseEntity;
 import rec.filmrec.domain.Movie;
 import rec.filmrec.domain.User;
 
@@ -10,7 +11,7 @@ import rec.filmrec.domain.User;
 @Getter
 @Setter
 @Table(name = "wait_board")
-public class WaitBoard {
+public class WaitBoard extends BaseEntity {
 
     @Id
     @Column(name = "wb_id")

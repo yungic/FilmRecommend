@@ -7,4 +7,14 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    List<Post> findAllPosts();
+
+    List<Post> findByPostId(long postId);
+
+    Post save(Post post);
+
+    void delete(Post post);
+
+
+
 }

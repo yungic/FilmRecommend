@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name="movie")
-public class Movie {
+public class Movie extends BaseEntity {
 
     @Id
     @Column(name = "movie_id")
