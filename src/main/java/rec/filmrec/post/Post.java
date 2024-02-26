@@ -2,6 +2,7 @@ package rec.filmrec.post;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rec.filmrec.board.MovieBoard;
 import rec.filmrec.comment.PostComment;
@@ -13,6 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name="post")
 public class Post extends BaseEntity {
 
@@ -36,4 +38,8 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post")
     private List<PostComment> comments = new ArrayList<PostComment>();
+
+    Post(long movieId) {
+        this.pMovieBoard.setMbId(movieId);
+    }
 }
