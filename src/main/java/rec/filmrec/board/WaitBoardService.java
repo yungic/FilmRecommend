@@ -2,9 +2,10 @@ package rec.filmrec.board;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rec.filmrec.exception.ExceptionCode;
+import rec.filmrec.exception.ServiceLogicException;
 
 import java.util.List;
-
 @Service
 public class WaitBoardService {
 
@@ -15,27 +16,28 @@ public class WaitBoardService {
         this.waitBoardJdbcRepository = waitBoardJdbcRepository;
     }
 
-    public List<WaitBoard> findAllWaitBoard() {
-        return waitBoardJdbcRepository.findAllWaitBoard();
+    public List<WaitBoard> findAllWb() {
+        return waitBoardJdbcRepository.findAll();
     }
 
-    public List<WaitBoard> findWbWithMovie(long movieId) {
-        return waitBoardJdbcRepository.findWaitBoardWithMovie(movieId);
+    public WaitBoard findWbById(long wbId) {
+        return waitBoardJdbcRepository.findByWbId(wbId)
+                .orElseThrow(() -> new ServiceLogicException(ExceptionCode.BOARD_NOT_FOUND));
+    }
+    // 이게 문제네.
+    public List<WaitBoard> findWbByMovie(long movieId) {
+        return waitBoardJdbcRepository.findByMovieId(movieId);
     }
 
-    public List<WaitBoard> findWbWithUser(long userId) {
-        return waitBoardJdbcRepository.findWaitBoardWithUser(userId);
+    public WaitBoard saveWb(long movieId, WaitBoard savedWaitBoard) {
+         return waitBoardJdbcRepository.saveWaitBoard(movieId, savedWaitBoard);
     }
 
-    public WaitBoard saveWb(WaitBoard savedWaitBoard) {
-        return waitBoardJdbcRepository.saveWaitBoard(savedWaitBoard);
+    public WaitBoard updateWaitBoard(WaitBoard updatedWaitBoard) {
+        return waitBoardJdbcRepository.updateWaitBoard(updatedWaitBoard);
     }
 
-    public void updateWaitBoard(WaitBoard updatedWaitBoard) {
-        waitBoardJdbcRepository.updateWaitBoard(updatedWaitBoard);
-    }
-
-    public void deleteWaitBoard(WaitBoard deletedWaitBoard) {
-        waitBoardJdbcRepository.deleteWaitBoard(deletedWaitBoard.getWbId());
+    public void deleteWaitBoard(long wbId) {
+        waitBoardJdbcRepository.deleteWaitBoard(wbId);
     }
 }

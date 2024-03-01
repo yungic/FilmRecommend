@@ -1,8 +1,7 @@
 package rec.filmrec.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import rec.filmrec.board.WaitBoard;
 
 import java.util.ArrayList;
@@ -11,6 +10,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder(toBuilder = true)
 @Table(name="movie")
 public class Movie {
 

@@ -1,24 +1,23 @@
 package rec.filmrec.board;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import rec.filmrec.domain.BaseEntity;
 import rec.filmrec.domain.Movie;
-import rec.filmrec.domain.User;
 
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder(toBuilder = true)
 @Table(name = "wait_board")
-public class WaitBoard {
+public class WaitBoard extends BaseEntity {
 
     @Id
-    @Column(name = "wb_id")
+    @JoinColumn(name = "wb_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long wbId;
-
-    @Column(name = "wb_pass")
-    private int wbPassword;
 
     @Column(name = "wb_title")
     private String wbTitle;
@@ -31,10 +30,12 @@ public class WaitBoard {
     private Movie movie;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
     @JoinColumn(name="mb_id")
     private MovieBoard movieBoard;
+
+    WaitBoard(String wbTitle, String wbContent) {
+        builder().wbTitle(wbTitle)
+                .wbContent(wbContent)
+                .build();
+    }
 }
