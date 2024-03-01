@@ -5,9 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rec.filmrec.board.MovieBoard;
-import rec.filmrec.comment.PostComment;
+import rec.filmrec.comment.Comment;
 import rec.filmrec.domain.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +22,7 @@ public class Post extends BaseEntity {
     @Id
     @Column(name = "post_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long postId;
-
-    @Column(name = "post_pass")
-    private int postPassword;
+    private long Id;
 
     @Column(name = "post_title")
     private String postTitle;
@@ -34,12 +32,11 @@ public class Post extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="p_board_id")
-    private MovieBoard pMovieBoard;
+    private MovieBoard movieBoard;
 
     @OneToMany(mappedBy = "post")
-    private List<PostComment> comments = new ArrayList<PostComment>();
+    private List<Comment> comments = new ArrayList<>();
 
-    Post(long movieId) {
-        this.pMovieBoard.setMbId(movieId);
-    }
+    private LocalDateTime createdAt;
+
 }

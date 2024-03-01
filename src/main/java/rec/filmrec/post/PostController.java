@@ -4,75 +4,74 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import rec.filmrec.board.MovieBoardService;
+import rec.filmrec.comment.Comment;
+import rec.filmrec.comment.CommentService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
-@RequestMapping("/Post")
+@RequestMapping("/posts")
 public class PostController {
 
     private final PostService postService;
+    private final MovieBoardService movieBoardService;
+    private final CommentService commentService;
 
     @Autowired
-    PostController(PostService postService) {
+    PostController(PostService postService, MovieBoardService movieBoardService, CommentService commentService) {
         this.postService = postService;
+        this.movieBoardService = movieBoardService;
+        this.commentService = commentService;
     }
 
-    @GetMapping("/{postID}")
-    public String getPostById(@RequestParam("postId") long postId, Model model) {
-        Post getPostById = postService.getPostById(postId);
-        model.addAttribute("Post", getPostById);
-
-        return "viewPost1";
+    @GetMapping("/create")
+    public String moveToCreateForm(@RequestParam(value = "mbId") long mbId, Model model) {
+        model.addAttribute("createPostsMbId", mbId);
+        return "post/createpost";
     }
 
-    @GetMapping("/{movieId}")
-    public String getPostsByMovieId(@PathVariable("movieId") long movieId, Model model) {
-        List<Post> postsFindByMovieId = postService.getPostByMbId(movieId);
-        model.addAttribute("postsFindByMovieId", postsFindByMovieId);
+    @PostMapping("/create")
+    public String createPost(@RequestParam(value = "mbId") long mbId, @ModelAttribute Post post) {
+        post.setMovieBoard(movieBoardService.getByMbId(mbId));
+        postService.createPost(post);
 
-        return "viewPost2";
+        return "redirect:/mbs/" + mbId;
     }
 
-    @GetMapping("/allPost")
-    public String getAllPost(Model model) {
-        List<Post> getAllPost = postService.getAllPosts();
-        model.addAttribute("allPost", getAllPost);
-
-        return "viewPost3";
+    @GetMapping("/{postId}")
+    public String getPostById(@PathVariable(value = "postId") long postId, Model model) {
+        Post fPost = postService.getPostById(postId);
+        model.addAttribute("fPost", fPost);
+        List<Comment> comments = commentService.findCommentsByPostId(postId);
+        model.addAttribute("comments", comments);
+        return "post/post";
     }
 
-    @PostMapping("/add/{movieId}")
-    public String savePost(@PathVariable("movieId") long movieBoardId, @ModelAttribute Post post) {
-        post.getPMovieBoard().setMbId(movieBoardId);
-        postService.updatePost(post);
-
-        return "redirect:/Post/allPost";
+    @GetMapping("/{postId}/edit")
+    public String editPost(@PathVariable(value = "postId") Long postId, Model model) {
+        Post post = postService.getPostById(postId);
+        model.addAttribute("post", post);
+        return "post/editpost";
     }
 
-    @PostMapping("/update/{postId}")
-    public String updatePost(@PathVariable("postId") long postId, @ModelAttribute Post post, Model model) {
-        // postId에 해당하는 기존 Post를 가져와 업데이트
-        Post updatedPost = postService.getPostById(postId);
+    @PostMapping("/{postId}/edit")
+    public String editPost(@PathVariable(value = "postId") Long postId, @ModelAttribute Post post, RedirectAttributes redirectAttributes) {
+        Post updatedPost = postService.updatePost(post, postId);
 
-        if (updatedPost != null) {
-            // 업데이트할 내용으로 기존 Post를 업데이트
-            updatedPost.setPostTitle(updatedPost.getPostTitle());
-            updatedPost.setPostContent(updatedPost.getPostContent());
-
-            // 업데이트된 Post를 저장
-            postService.savePost(post);
-            model.addAttribute("Post", updatedPost);
-        } else {
-           //예외처리
-        }
-
-        return "viewPost4"; // 업데이트된 Post를 보여주는 뷰 페이지로 이동
+        redirectAttributes.addAttribute("postId", updatedPost.getId());
+        redirectAttributes.addFlashAttribute("message", "게시글이 수정되었습니다.");
+        return "redirect:/posts/{postId}";
     }
 
     @DeleteMapping("/{postId}")
-    public void deletePost(@RequestParam long postId) {
-        Post foundPost = postService.getPostById(postId);
-        postService.deletePost(foundPost);
+    public String deletePost(@PathVariable(value = "postId") Long postId, RedirectAttributes redirectAttributes) {
+        postService.deletePost(postId);
+        redirectAttributes.addFlashAttribute("message", "게시글이 삭제되었습니다.");
+        return "redirect:/mbs";
     }
+
+
 }

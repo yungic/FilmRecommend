@@ -1,22 +1,17 @@
 package rec.filmrec.post;
 
+import java.time.LocalDateTime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
+import rec.filmrec.board.MovieBoard;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    Optional<Post> findByPostId(long postId);
+    Page<Post> findAllByMovieBoardAndPostTitleContaining(MovieBoard movieBoard, String keyword, Pageable pageable);
 
-    List<Post> findByMovieBoardId(long movieBoardId);
-
-    List<Post> findAll();
-
-    Post save(Post post);
-
-    void delete(Post post);
-
+    Page<Post> findAllByMovieBoardOrderByCreatedAtDesc(MovieBoard movieBoard, Pageable pageable);
 }

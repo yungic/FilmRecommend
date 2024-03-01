@@ -1,15 +1,15 @@
 package rec.filmrec.board;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import rec.filmrec.domain.Movie;
-import rec.filmrec.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,84 +23,45 @@ public class WaitBoardJdbcRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public WaitBoardJdbcRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public WaitBoardJdbcRepository(DataSource datasource) {
+        jdbcTemplate = new JdbcTemplate(datasource);
     }
 
-    // RowMapper
-    private static class waitBoardRowMapper implements RowMapper<WaitBoard> {
+    // @Builder를 이용해서 만든 RowMapper
+    private RowMapper<WaitBoard> wbRowMapper() {
+        return (rs, rowNum) -> {
+            return WaitBoard.builder()
+                    .wbId(rs.getLong("wb_id"))
+                    .wbTitle(rs.getString("wb_title"))
+                    .wbContent(rs.getString("wb_content"))
+                    .build();
+        };
+    }
 
-        @Override
-        public WaitBoard mapRow(ResultSet rs, int rowNum) throws SQLException {
-            WaitBoard waitBoard = new WaitBoard();
-            waitBoard.setWbTitle(rs.getString("wb_id"));
-            waitBoard.setWbContent(rs.getString("wb_content"));
+    public List<WaitBoard> findAll() {
+        String sql = "SELECT wb_id, wb_title, wb_content FROM wait_board";
+        return jdbcTemplate.query(sql, wbRowMapper());
+    }
 
-            Movie movie = new Movie();
-            movie.setMovieId(rs.getLong("movie_id"));
-            movie.setMovieTitle(rs.getString("movie_title"));
-            movie.setMovieInfo(rs.getString("movie_info"));
-
-            User user = new User();
-            user.setUserId(rs.getLong("user_id"));
-            user.setUserNickname(rs.getString("user_nick"));
-
-            waitBoard.setMovie(movie);
-            waitBoard.setUser(user);
-
-            return waitBoard;
+    public Optional<WaitBoard> findByWbId(long wbId) {
+        try {
+            String sql = "SELECT wb_id, wb_title, wb_content FROM wait_board WHERE wb_id = ?";
+            WaitBoard waitBoard = jdbcTemplate.queryForObject(sql, wbRowMapper(), wbId);
+            return Optional.ofNullable(waitBoard);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
     }
 
-    public Optional<WaitBoard> findWaitBoardByWbId(long wbId) {
-        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content, " +
-                "m.id AS movie_id, m.title AS movie_title, m.info AS movie_info, " +
-                "u.id AS user_id, u.ni AS user_nick " +
-                "FROM wait_board w " +
-                "JOIN movie m ON w.m_id = m.m_id " +
-                "JOIN user u ON w.u_id = u.u_id " +
-                "WHERE w.w_id = ?";
-
-        return jdbcTemplate.query(sql, new Object[]{wbId}, new waitBoardRowMapper()).stream().findFirst();
+    public List<WaitBoard> findByMovieId(long movieId) {
+        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content FROM wait_board, WHERE movie_id = ?";
+        return jdbcTemplate.query(sql, wbRowMapper(), movieId);
     }
 
-    public List<WaitBoard> findWaitBoardWithMovie(long movieId) {
-        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content, " +
-                "m.id AS movie_id, m.title AS movie_title, m.info AS movie_info, " +
-                "u.id AS user_id, u.ni AS user_nick " +
-                "FROM wait_board w " +
-                "JOIN movie m ON w.m_id = m.m_id " +
-                "JOIN user u ON w.u_id = u.u_id " +
-                "WHERE w.m_id = ?";
-
-        return jdbcTemplate.query(sql, new waitBoardRowMapper());
-    }
-
-    public List<WaitBoard> findWaitBoardWithUser(long userId) {
-        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content, " +
-                "m.id AS movie_id, m.title AS movie_title, m.info AS movie_info, " +
-                "u.id AS user_id, u.ni AS user_nick " +
-                "FROM wait_board w " +
-                "JOIN movie m ON w.m_id = m.m_id " +
-                "JOIN user u ON w.u_id = u.u_id " +
-                "WHERE u.u_id = ?";
-
-        return jdbcTemplate.query(sql, new waitBoardRowMapper());
-    }
-
-    public List<WaitBoard> findAllWaitBoard() {
-        String sql = "SELECT w.wb_id, w.wb_title, w.wb_content, " +
-                "m.id AS movie_id, m.title AS movie_title, m.info AS movie_info, " +
-                "u.id AS user_id, u.ni AS user_nick " +
-                "FROM wait_board w " +
-                "JOIN movie m ON w.m_id = m.m_id " +
-                "JOIN user u ON w.u_id = u.u_id";
-
-        return jdbcTemplate.query(sql, new waitBoardRowMapper());
-    }
-
-    public WaitBoard saveWaitBoard(WaitBoard waitBoard) {
-        String sql = "INSERT INTO wait_board (wb_title, wb_content, m_id, u_id) VALUES (?, ?, ?, ?)";
+    // 내 생각에는 void로 가도 상관 없을 것 같은데? 뷰에다가 추가할것도 없을 것 같고, 또 리다이렉트로 가버릴 수 있으니.
+    // 빌더로 만들어주기까지만 하고, 따로 저장해서 쓸 필요는 없을 것 같다. 써야된다면 void -> 다른객체로 바꿔주자.
+    public WaitBoard saveWaitBoard(long movieId, WaitBoard waitBoard) {
+        String sql = "INSERT INTO wait_board (movie_id, wb_title, wb_content) VALUES ("+ movieId + ", ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -108,31 +69,26 @@ public class WaitBoardJdbcRepository {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, waitBoard.getWbTitle());
             ps.setString(2, waitBoard.getWbContent());
-            ps.setLong(3, waitBoard.getMovie().getMovieId());
-            ps.setLong(4, waitBoard.getUser().getUserId());
             return ps;
         }, keyHolder);
 
-        if (keyHolder.getKey() != null) {
-            long generatedId = keyHolder.getKey().longValue();
-            waitBoard.setWbId(generatedId);
-            return waitBoard;
-        } else {
-            throw new DataAccessException("Failed to get generated key.") {}; // 예외 처리 필요
-        }
+        Number key = keyHolder.getKey();
+
+        if(key == null) return waitBoard;
+        return waitBoard.toBuilder()
+                .wbId(key.longValue())
+                .build();
     }
 
-    public void updateWaitBoard(WaitBoard waitBoard) {
-        String sql = "UPDATE wait_board SET wb_title = ?, wb_content = ?, WHERE wb_id = ?";
-        jdbcTemplate.update(sql,
-                waitBoard.getWbTitle(),
-                waitBoard.getWbContent(),
-                waitBoard.getWbId());
-    }
+    public WaitBoard updateWaitBoard(WaitBoard waitBoard) {
+        String updateSql = "UPDATE wait_board SET wb_title = ?, wb_content = ? WHERE wb_id = ?";
+        jdbcTemplate.update(updateSql,
+                waitBoard.getWbTitle(), waitBoard.getWbContent(), waitBoard.getWbId());
 
+        return waitBoard;
+    }
     public void deleteWaitBoard(long wbId) {
         String sql = "DELETE FROM wait_board WHERE wb_id = ?";
         jdbcTemplate.update(sql, wbId);
     }
-
 }
